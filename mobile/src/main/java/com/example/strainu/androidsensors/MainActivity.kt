@@ -14,7 +14,6 @@ class MainActivity : AppCompatActivity() {
         recycler_list.layoutManager = LinearLayoutManager(this)
         recycler_list.setHasFixedSize(true)
 
-        val myDataset= Array(20, {x -> "Sensor$x"})
-        recycler_list.adapter = SensorsAdapter(myDataset)
+        recycler_list.adapter = SensorsAdapter(this)
     }
 }

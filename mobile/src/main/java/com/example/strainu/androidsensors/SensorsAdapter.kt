@@ -1,5 +1,8 @@
 package com.example.strainu.androidsensors
 
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -11,8 +14,14 @@ import kotlinx.android.synthetic.main.sensor_item_layout.*
 /**
  * Created by strongheart on 11/10/17.
  */
-class SensorsAdapter(var items: Array<String>): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class SensorsAdapter(context: Context): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
+    var sensorsList: List<Sensor>
+
+    init {
+        val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        sensorsList = sensorManager.getSensorList(Sensor.TYPE_ALL)
+    }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.sensor_item_layout, parent,false)
         return SensorHolder(view)
@@ -20,11 +29,11 @@ class SensorsAdapter(var items: Array<String>): RecyclerView.Adapter<RecyclerVie
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
         val sensorHolder= holder as SensorHolder
-        sensorHolder.sensorName.setText(items[position])
+        sensorHolder.sensorName.setText(sensorsList[position].name)
     }
 
     override fun getItemCount(): Int {
-        return items.size
+        return sensorsList.size
     }
 
     class SensorHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
