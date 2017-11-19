@@ -32,5 +32,6 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     wearApp project(':wear')
     implementation 'com.android.support:recyclerview-v7:26.1.0'
+    implementation 'com.android.support:design:26.1.0'
     implementation 'com.google.android.gms:play-services-wearable:11.6.0'
 }
