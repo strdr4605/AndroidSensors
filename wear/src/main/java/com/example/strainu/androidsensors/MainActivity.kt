@@ -3,7 +3,6 @@ package com.example.strainu.androidsensors
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
 import android.support.wearable.activity.WearableActivity
-import android.support.wear.widget.WearableRecyclerView
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : WearableActivity() {
@@ -14,6 +13,7 @@ class MainActivity : WearableActivity() {
 
         recycler_list.layoutManager = LinearLayoutManager(this)
         recycler_list.setHasFixedSize(true)
+
         recycler_list.adapter = SensorsAdapter(this)
 
         // Enables Always-on
