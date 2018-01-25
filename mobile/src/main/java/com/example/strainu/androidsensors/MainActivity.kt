@@ -4,9 +4,22 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.widget.LinearLayoutManager
+import android.util.Log
+import android.widget.Toast
+import com.google.android.gms.wearable.MessageClient
+import com.google.android.gms.wearable.MessageEvent
 import kotlinx.android.synthetic.main.activity_main.*
+import com.google.android.gms.wearable.Wearable
+import com.google.android.gms.wearable.CapabilityClient
+import java.nio.charset.Charset
 
-class MainActivity : AppCompatActivity() {
+
+class MainActivity :
+        AppCompatActivity(),
+        MessageClient.OnMessageReceivedListener {
+
+    private val SENSOR_DATA_MESSAGE_PATH = "/sensor_data"
+    private val TAG = "MainActivityMobile"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -19,6 +32,25 @@ class MainActivity : AppCompatActivity() {
 
         recycler_list.adapter = SensorsAdapter(this)
     }
+
+    override fun onMessageReceived(messageEvent: MessageEvent) {
+        if (messageEvent.getPath().equals(SENSOR_DATA_MESSAGE_PATH)) {
+            val message = "Received message: " + messageEvent.data.toString(Charset.defaultCharset())
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+            Log.i(TAG, message)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Wearable.getMessageClient(this).addListener(this)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Wearable.getMessageClient(this).removeListener(this)
+    }
+
 
     fun fabClicker(): Unit {
         var toggleFab = true
