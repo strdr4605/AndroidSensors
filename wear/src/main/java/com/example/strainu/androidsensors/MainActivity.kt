@@ -18,10 +18,14 @@ class MainActivity : WearableActivity() {
     private val SENSOR_DATA_MESSAGE_PATH = "/sensor_data"
     private var sensorDataNodeId : String? = null
     private val TAG = "MainActivityWear"
+    private var handler: Handler? = null
+    private var runnable : Runnable? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        Log.i(TAG, "Wear activity created")
 
         recycler_list.layoutManager = LinearLayoutManager(this)
         recycler_list.setHasFixedSize(true)
@@ -34,7 +38,19 @@ class MainActivity : WearableActivity() {
         // Trigger an AsyncTask that will get the handheld device node
         StartSetupSensorDataTask().execute()
 
+        setCronometer()
+    }
+
+    override fun onResume() {
+        super.onResume()
         startSendingMessage()
+        Log.i(TAG, "Wear activity resumed")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        stopSendingMessage()
+        Log.i(TAG, "Wear activity paused")
     }
 
     private fun setupSensorData() {
@@ -87,22 +103,35 @@ class MainActivity : WearableActivity() {
         }
     }
 
-    private fun startSendingMessage() {
+    private fun setCronometer() {
         var number : Int = 0
         val message = "Cool message "
-        val handler = Handler()
+        handler = Handler()
         val miliseconds : Long = 2000
-        val runnable = object : Runnable {
+
+        runnable = object : Runnable {
             override fun run() {
                 val fullMessage = message + number.toString()
                 sendMessage(fullMessage.toByteArray())
                 ++number
-                handler.postDelayed(this, miliseconds)
+                handler!!.postDelayed(this, miliseconds)
             }
         }
-
-        handler.post(runnable)
     }
+
+    private fun startSendingMessage() {
+        handler!!.post(runnable)
+    }
+
+
+    private fun stopSendingMessage() {
+        handler!!.removeCallbacks(runnable)
+    }
+
+
+
+
+
 
 
     private inner class StartSetupSensorDataTask : AsyncTask<Void, Void, Void>() {
