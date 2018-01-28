@@ -12,20 +12,24 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.TextView
-import kotlinx.android.synthetic.main.sensor_item_layout.*
 import java.util.*
+import kotlin.collections.ArrayList
 
 /**
  * Created by strongheart on 11/10/17.
  */
-class SensorsAdapter(context:Context): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class SensorsAdapter(context: Context,
+                     private val sensorsDataArray: ArrayList<SensorData>): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private val sensorsList: List<Sensor>
-    private val sensorManager: SensorManager
+    private val sensorsList : List<Sensor>
+    private val sensorManager : SensorManager
+    private val sensorsNameMap: MutableMap<String, Sensor>
 
     init {
         sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
         sensorsList = sensorManager.getSensorList(Sensor.TYPE_ALL)
+        sensorsNameMap = mutableMapOf()
+        sensorsList.forEach { sensorsNameMap[it.name] = it }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -34,19 +38,28 @@ class SensorsAdapter(context:Context): RecyclerView.Adapter<RecyclerView.ViewHol
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
-        val sensorHolder= holder as SensorHolder
-        sensorHolder.sensorName.setText(sensorsList[position].name)
-        attachListener(sensorsList[position], sensorHolder.sensorValue)
+        val sensorHolder: SensorHolder = holder as SensorHolder
+        sensorHolder.sensorName.text = sensorsDataArray[position].sensorName
+
+        sensorHolder.sensorCheckBox.setOnCheckedChangeListener(null)
+        sensorHolder.sensorCheckBox.isChecked = sensorsDataArray[position].isChecked
+        sensorHolder.sensorCheckBox.setOnCheckedChangeListener { buttonView, isChecked ->
+                sensorsDataArray[position].isChecked = isChecked
+        }
+
+        sensorHolder.sensorValue.text = sensorsDataArray[position].sensorValue
+        attachListener(position, sensorHolder)
     }
 
     override fun getItemCount(): Int {
         return sensorsList.size
     }
 
-    private fun attachListener(sensor: Sensor, sensorValue: TextView) {
+    private fun attachListener(position: Int, sensorHolder: SensorHolder) {
         val sensorEventListener = object : SensorEventListener {
             override fun onSensorChanged(sensorEvent: SensorEvent) {
-                sensorValue.text = Arrays.toString(sensorEvent.values)
+                sensorHolder.sensorValue.text = Arrays.toString(sensorEvent.values)
+                sensorsDataArray[position].sensorValue = Arrays.toString(sensorEvent.values)
 //                Log.d("Sensor", Arrays.toString(sensorEvent.values))
             }
 
@@ -54,21 +67,15 @@ class SensorsAdapter(context:Context): RecyclerView.Adapter<RecyclerView.ViewHol
 //                Log.d("SensorAccChange", sensor.name + " - " + accuracy)
             }
         }
+        val sensor : Sensor = sensorsNameMap[sensorsDataArray[position].sensorName]!!
         sensorManager.registerListener(sensorEventListener, sensor, SensorManager.SENSOR_DELAY_UI)
         Log.i("Sensor", "Registerered listener for ${sensor.name}")
     }
 
 
     class SensorHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
-
-        val sensorName: TextView
-        val sensorCheckBox: CheckBox
-        var sensorValue: TextView
-
-        init {
-            sensorName = itemView.findViewById(R.id.sensor_name)
-            sensorCheckBox = itemView.findViewById((R.id.sensor_check_box))
-            sensorValue = itemView.findViewById(R.id.sensor_value)
-        }
+        val sensorName: TextView = itemView.findViewById(R.id.sensor_name)
+        val sensorCheckBox: CheckBox = itemView.findViewById((R.id.sensor_check_box))
+        var sensorValue: TextView = itemView.findViewById(R.id.sensor_value)
     }
 }

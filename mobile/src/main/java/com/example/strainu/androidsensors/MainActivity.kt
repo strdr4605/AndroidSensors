@@ -10,7 +10,6 @@ import com.google.android.gms.wearable.MessageClient
 import com.google.android.gms.wearable.MessageEvent
 import kotlinx.android.synthetic.main.activity_main.*
 import com.google.android.gms.wearable.Wearable
-import com.google.android.gms.wearable.CapabilityClient
 import java.nio.charset.Charset
 
 
