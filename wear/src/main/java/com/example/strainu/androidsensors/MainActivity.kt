@@ -68,14 +68,15 @@ class MainActivity : WearableActivity() {
         val sensorManager : SensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         val sensorsList: MutableList<Sensor> = sensorManager.getSensorList(Sensor.TYPE_ALL)
         sensorsList.forEach { sensor ->
-            sensorsDataArray.add(SensorData(sensor.name, false, "Nothing"))
+            sensorsDataArray.add(SensorData(sensor.name, false, "Nothing", null))
         }
 
         sensorsDataArray.forEachIndexed { index, sensorData ->
             val sensorEventListener = object : SensorEventListener {
                 override fun onSensorChanged(sensorEvent: SensorEvent) {
                     sensorData.sensorValue = Arrays.toString(sensorEvent.values)
-                    recycler_list.adapter.notifyDataSetChanged()
+                    sensorData.time = Date()
+//                    recycler_list.adapter.notifyDataSetChanged()
                     Log.i("Listener", "Listener for ${sensorData.sensorName} vs ${sensorsList[index].name} registered" )
                     //                Log.d("Sensor", Arrays.toString(sensorEvent.values))
                 }
@@ -139,19 +140,16 @@ class MainActivity : WearableActivity() {
     }
 
     private fun setCronometer() {
-        var number = 0
-        val message = "Cool message "
         handler = Handler()
-        val miliseconds : Long = 2000
+        val miliseconds : Long = 500
 
 
 
         runnable = object : Runnable {
             override fun run() {
-                val fullMessage = message + number.toString() + getSensorsDataJson()
-                Log.i(TAG, fullMessage)
-                sendMessage(fullMessage.toByteArray())
-                ++number
+                val message = getSensorsDataJson()
+                Log.i(TAG, message)
+                sendMessage(message.toByteArray())
                 handler.postDelayed(this, miliseconds)
             }
         }
@@ -170,7 +168,7 @@ class MainActivity : WearableActivity() {
     private fun getSensorsDataJson(): String  {
         Log.i(TAG, "sensorsCount = " + sensorsDataArray.size)
         val gson = GsonBuilder().setPrettyPrinting().create()
-        return gson.toJson(sensorsDataArray)
+        return gson.toJson(sensorsDataArray.filter { it.isChecked })
     }
 
     private class StartSetupSensorDataTask : AsyncTask<MainActivity, Void, Void>() {

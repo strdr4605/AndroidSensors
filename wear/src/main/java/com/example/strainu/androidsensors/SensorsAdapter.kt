@@ -32,13 +32,13 @@ class SensorsAdapter(context: Context,
         val sensorHolder: SensorHolder = holder as SensorHolder
         sensorHolder.sensorName.text = sensorsDataArray[position].sensorName
 //        sensorHolder.sensorCheckBox.isChecked = sensorsDataArray[position].isChecked
-        sensorHolder.sensorValue.text = sensorsDataArray[position].sensorValue
+//        sensorHolder.sensorValue.text = sensorsDataArray[position].sensorValue
 //        Log.i(TAG, "***********************************************************************")
 //        Log.i(TAG, "position = $position, sensors_name =  ${sensorsDataArray[position].sensorName}")
 //
 //
-//        sensorHolder.sensorCheckBox.setOnCheckedChangeListener(null)
-//        sensorHolder.sensorCheckBox.isChecked = sensorsDataArray[position].isChecked
+        sensorHolder.sensorCheckBox.setOnCheckedChangeListener(null)
+        sensorHolder.sensorCheckBox.isChecked = sensorsDataArray[position].isChecked
         sensorHolder.sensorCheckBox.setOnCheckedChangeListener { buttonView, isChecked ->
                 sensorsDataArray[position].isChecked = isChecked
         }
