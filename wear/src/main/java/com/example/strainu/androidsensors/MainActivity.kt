@@ -2,6 +2,8 @@ package com.example.strainu.androidsensors
 
 import android.content.Context
 import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.AsyncTask
 import android.os.Bundle
@@ -14,6 +16,7 @@ import com.google.android.gms.tasks.Tasks
 import com.google.android.gms.wearable.*
 import com.google.gson.GsonBuilder
 import kotlinx.android.synthetic.main.activity_main.*
+import java.util.*
 
 class MainActivity : WearableActivity() {
     private val SENSOR_DATA_CAPABILITY_NAME = "receive_sensor_data"
@@ -23,6 +26,7 @@ class MainActivity : WearableActivity() {
     private lateinit var handler: Handler
     private lateinit var runnable : Runnable
     private lateinit var sensorsDataArray : ArrayList<SensorData>
+    private lateinit var sensorsAdapter : SensorsAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,10 +36,12 @@ class MainActivity : WearableActivity() {
         recycler_list.layoutManager = LinearLayoutManager(this)
         recycler_list.setHasFixedSize(true)
 
-        initSensorsData()
+        sensorsDataArray = ArrayList<SensorData>()
+        sensorsAdapter = SensorsAdapter(this, sensorsDataArray)
 
-        recycler_list.adapter = SensorsAdapter(this, sensorsDataArray)
+        recycler_list.adapter = sensorsAdapter
 
+        setSensorsData()
         // Enables Always-on
         setAmbientEnabled()
 
@@ -58,11 +64,29 @@ class MainActivity : WearableActivity() {
         Log.i(TAG, "Wear activity paused")
     }
 
-    private fun initSensorsData() {
+    private fun setSensorsData() {
         val sensorManager : SensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         val sensorsList: MutableList<Sensor> = sensorManager.getSensorList(Sensor.TYPE_ALL)
-        sensorsDataArray = ArrayList<SensorData>()
-        sensorsList.forEach { sensor -> sensorsDataArray.add(SensorData(sensor.name, false, "Nothing")) }
+        sensorsList.forEach { sensor ->
+            sensorsDataArray.add(SensorData(sensor.name, false, "Nothing"))
+        }
+
+        sensorsDataArray.forEachIndexed { index, sensorData ->
+            val sensorEventListener = object : SensorEventListener {
+                override fun onSensorChanged(sensorEvent: SensorEvent) {
+                    sensorData.sensorValue = Arrays.toString(sensorEvent.values)
+                    recycler_list.adapter.notifyDataSetChanged()
+                    Log.i("Listener", "Listener for ${sensorData.sensorName} vs ${sensorsList[index].name} registered" )
+                    //                Log.d("Sensor", Arrays.toString(sensorEvent.values))
+                }
+
+                override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
+                    //                Log.d("SensorAccChange", sensor.name + " - " + accuracy)
+                }
+            }
+            sensorManager.registerListener(sensorEventListener, sensorsList[index], SensorManager.SENSOR_DELAY_UI)
+        }
+
     }
 
     private fun retriveCapableNodes() {
