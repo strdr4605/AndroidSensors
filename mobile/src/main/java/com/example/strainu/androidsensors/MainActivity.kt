@@ -35,7 +35,7 @@ class MainActivity :
     override fun onMessageReceived(messageEvent: MessageEvent) {
         if (messageEvent.getPath().equals(SENSOR_DATA_MESSAGE_PATH)) {
             val message = "Received message: " + messageEvent.data.toString(Charset.defaultCharset())
-            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+//            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
             Log.i(TAG, message)
         }
     }
