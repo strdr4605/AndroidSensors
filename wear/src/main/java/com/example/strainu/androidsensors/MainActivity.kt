@@ -27,21 +27,27 @@ class MainActivity : WearableActivity() {
     private lateinit var runnable : Runnable
     private lateinit var sensorsDataArray : ArrayList<SensorData>
     private lateinit var sensorsAdapter : SensorsAdapter
+    private lateinit var sensorManager : SensorManager
+    private lateinit var sensorsList: MutableList<Sensor>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         Log.i(TAG, "Wear activity created")
 
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+
         recycler_list.layoutManager = LinearLayoutManager(this)
         recycler_list.setHasFixedSize(true)
 
-        sensorsDataArray = ArrayList<SensorData>()
-        sensorsAdapter = SensorsAdapter(this, sensorsDataArray)
+        sensorsDataArray = ArrayList()
+        sensorsList = sensorManager.getSensorList(Sensor.TYPE_ALL)
+        sensorsAdapter = SensorsAdapter(this, sensorsList)
 
         recycler_list.adapter = sensorsAdapter
 
         setSensorsData()
+
         // Enables Always-on
         setAmbientEnabled()
 
@@ -65,8 +71,6 @@ class MainActivity : WearableActivity() {
     }
 
     private fun setSensorsData() {
-        val sensorManager : SensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        val sensorsList: MutableList<Sensor> = sensorManager.getSensorList(Sensor.TYPE_ALL)
         sensorsList.forEach { sensor ->
             sensorsDataArray.add(SensorData(sensor.name, false, "Nothing"))
         }
@@ -75,7 +79,6 @@ class MainActivity : WearableActivity() {
             val sensorEventListener = object : SensorEventListener {
                 override fun onSensorChanged(sensorEvent: SensorEvent) {
                     sensorData.sensorValue = Arrays.toString(sensorEvent.values)
-                    recycler_list.adapter.notifyDataSetChanged()
                     Log.i("Listener", "Listener for ${sensorData.sensorName} vs ${sensorsList[index].name} registered" )
                     //                Log.d("Sensor", Arrays.toString(sensorEvent.values))
                 }
@@ -130,11 +133,11 @@ class MainActivity : WearableActivity() {
             // You can add success and/or failure listeners,
             // Or you can call Tasks.await() and catch ExecutionException
             // A successful result code does not guarantee delivery of the message.
-            sendTask.addOnSuccessListener {Log.i(TAG, "Message send succesufully")}
-            sendTask.addOnFailureListener {Log.i(TAG, "Message failed to send")}
+//            sendTask.addOnSuccessListener {Log.i(TAG, "Message send succesufully")}
+//            sendTask.addOnFailureListener {Log.i(TAG, "Message failed to send")}
         } else {
             // Unable to retrieve node with receive sensor data capabilities
-            Log.i(TAG, "Unable to retrieve node with receive sensors data capability")
+//            Log.i(TAG, "Unable to retrieve node with receive sensors data capability")
         }
     }
 
@@ -149,7 +152,7 @@ class MainActivity : WearableActivity() {
         runnable = object : Runnable {
             override fun run() {
                 val fullMessage = message + number.toString() + getSensorsDataJson()
-                Log.i(TAG, fullMessage)
+//                Log.i(TAG, fullMessage)
                 sendMessage(fullMessage.toByteArray())
                 ++number
                 handler.postDelayed(this, miliseconds)
@@ -168,14 +171,14 @@ class MainActivity : WearableActivity() {
 
 
     private fun getSensorsDataJson(): String  {
-        Log.i(TAG, "sensorsCount = " + sensorsDataArray.size)
+//        Log.i(TAG, "sensorsCount = " + sensorsDataArray.size)
         val gson = GsonBuilder().setPrettyPrinting().create()
         return gson.toJson(sensorsDataArray)
     }
 
     private class StartSetupSensorDataTask : AsyncTask<MainActivity, Void, Void>() {
         override fun doInBackground(vararg params: MainActivity?): Void? {
-            Log.i(params[0]?.TAG, "Starting setup sensor data Task")
+//            Log.i(params[0]?.TAG, "Starting setup sensor data Task")
             params[0]?.retriveCapableNodes()
             return null
         }
