@@ -9,17 +9,13 @@ import android.os.Handler
 import android.support.v7.widget.LinearLayoutManager
 import android.support.wearable.activity.WearableActivity
 import android.util.Log
-import android.view.View
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.google.android.gms.wearable.*
 import com.google.gson.GsonBuilder
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.sensor_item_layout.view.*
-
 
 class MainActivity : WearableActivity() {
-
     private val SENSOR_DATA_CAPABILITY_NAME = "receive_sensor_data"
     private val SENSOR_DATA_MESSAGE_PATH = "/sensor_data"
     private var sensorDataReceiverNodeId: String? = null

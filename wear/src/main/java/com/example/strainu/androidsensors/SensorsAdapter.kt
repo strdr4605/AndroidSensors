@@ -20,16 +20,22 @@ import kotlin.collections.ArrayList
  */
 class SensorsAdapter(context: Context,
                      private val sensorsDataArray: ArrayList<SensorData>): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-
-    private val sensorsList : List<Sensor>
     private val sensorManager : SensorManager
-    private val sensorsNameMap: MutableMap<String, Sensor>
+    private val sensorsList : List<Sensor>
+    private var sensorsListenerNameMap: MutableMap<String, Pair<Sensor, SensorEventListener?>>
+    private val TAG = "WearSensorAdapter"
 
     init {
         sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
         sensorsList = sensorManager.getSensorList(Sensor.TYPE_ALL)
-        sensorsNameMap = mutableMapOf()
-        sensorsList.forEach { sensorsNameMap[it.name] = it }
+        sensorsListenerNameMap = mutableMapOf()
+
+        sensorsList.forEach { sensorsListenerNameMap[it.name] = Pair(it, null) }
+
+        for((t,u) in sensorsListenerNameMap) {
+            Log.i(TAG, "sensorKeyName = $t         sensorFirstName = ${u.first.name}" )
+        }
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -40,6 +46,9 @@ class SensorsAdapter(context: Context,
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
         val sensorHolder: SensorHolder = holder as SensorHolder
         sensorHolder.sensorName.text = sensorsDataArray[position].sensorName
+        Log.i(TAG, "***********************************************************************")
+        Log.i(TAG, "position = $position, sensors_name =  ${sensorsDataArray[position].sensorName}")
+
 
         sensorHolder.sensorCheckBox.setOnCheckedChangeListener(null)
         sensorHolder.sensorCheckBox.isChecked = sensorsDataArray[position].isChecked
@@ -47,7 +56,8 @@ class SensorsAdapter(context: Context,
                 sensorsDataArray[position].isChecked = isChecked
         }
 
-        sensorHolder.sensorValue.text = sensorsDataArray[position].sensorValue
+        // dissaatage listerner here
+//        sensorHolder.sensorValue.text = sensorsDataArray[position].sensorValue
         attachListener(position, sensorHolder)
     }
 
@@ -56,8 +66,14 @@ class SensorsAdapter(context: Context,
     }
 
     private fun attachListener(position: Int, sensorHolder: SensorHolder) {
+        var sensorListenerPair: Pair<Sensor, SensorEventListener?> = sensorsListenerNameMap[sensorsDataArray[position].sensorName]!!
+        if(sensorListenerPair.second != null) {
+            sensorManager.unregisterListener(sensorListenerPair.second, sensorListenerPair.first)
+        }
+
         val sensorEventListener = object : SensorEventListener {
             override fun onSensorChanged(sensorEvent: SensorEvent) {
+//                sensorHolder.sensorName.text = sensorsDataArray[position].sensorName
                 sensorHolder.sensorValue.text = Arrays.toString(sensorEvent.values)
                 sensorsDataArray[position].sensorValue = Arrays.toString(sensorEvent.values)
 //                Log.d("Sensor", Arrays.toString(sensorEvent.values))
@@ -67,10 +83,15 @@ class SensorsAdapter(context: Context,
 //                Log.d("SensorAccChange", sensor.name + " - " + accuracy)
             }
         }
-        val sensor : Sensor = sensorsNameMap[sensorsDataArray[position].sensorName]!!
-        sensorManager.registerListener(sensorEventListener, sensor, SensorManager.SENSOR_DELAY_UI)
-        Log.i("Sensor", "Registerered listener for ${sensor.name}")
+        sensorsListenerNameMap[sensorsDataArray[position].sensorName] = sensorListenerPair.copy(second = sensorEventListener)
+
+        sensorListenerPair = sensorsListenerNameMap[sensorsDataArray[position].sensorName]!!
+        sensorManager.registerListener(sensorListenerPair.second, sensorListenerPair.first, SensorManager.SENSOR_DELAY_UI)
+
+        Log.i(TAG, "Registerered listener for ${sensorListenerPair.first.name} |||||  ${sensorsDataArray[position].sensorName}")
+
     }
+
 
 
     class SensorHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
