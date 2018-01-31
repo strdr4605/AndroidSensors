@@ -22,8 +22,7 @@ import java.util.*
 /**
  * Created by strongheart on 11/10/17.
  */
-class SensorsAdapter(context: Context,
-                     private val sensorsDataArray: ArrayList<SensorData>): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class SensorsAdapter(private val sensorsDataArray: ArrayList<SensorData>): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val TAG = "SensorAdapter"
 

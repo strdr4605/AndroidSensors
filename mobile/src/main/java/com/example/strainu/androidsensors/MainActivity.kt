@@ -33,7 +33,7 @@ class MainActivity :
         recycler_list.setHasFixedSize(true)
 
         receivedDataArray = ArrayList<SensorData>()
-        recycler_list.adapter = SensorsAdapter(this, receivedDataArray)
+        recycler_list.adapter = SensorsAdapter(receivedDataArray)
     }
 
     override fun onResume() {

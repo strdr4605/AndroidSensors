@@ -47,7 +47,7 @@ class MainActivity : WearableActivity() {
         initialiseSensorDataArray(sensorsList)
         registerListenersToSensors(sensorManager, sensorsList)
 
-        sensorsAdapter = SensorsAdapter(this, sensorsDataArray)
+        sensorsAdapter = SensorsAdapter(sensorsDataArray)
 
         recycler_list.adapter = sensorsAdapter
 
