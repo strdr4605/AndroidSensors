@@ -17,40 +17,45 @@ import com.google.android.gms.wearable.*
 import com.google.gson.GsonBuilder
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
+import kotlin.collections.ArrayList
 
 class MainActivity : WearableActivity() {
     private val SENSOR_DATA_CAPABILITY_NAME = "receive_sensor_data"
     private val SENSOR_DATA_MESSAGE_PATH = "/sensor_data"
-    private var sensorDataReceiverNodeId: String? = null
     private val TAG = "MainActivityWear"
+    private var sensorDataReceiverNodeId: String? = null
     private lateinit var handler: Handler
     private lateinit var runnable : Runnable
     private lateinit var sensorsDataArray : ArrayList<SensorData>
     private lateinit var sensorsAdapter : SensorsAdapter
+    private var delay: Long = 200 //miliseconds
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        // Enables Always-on
+        setAmbientEnabled()
+
         Log.i(TAG, "Wear activity created")
 
         recycler_list.layoutManager = LinearLayoutManager(this)
         recycler_list.setHasFixedSize(true)
 
-        sensorsDataArray = ArrayList<SensorData>()
+        val sensorManager : SensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val sensorsList: MutableList<Sensor> = sensorManager.getSensorList(Sensor.TYPE_ALL)
+
+        initialiseSensorDataArray(sensorsList)
+        registerListenersToSensors(sensorManager, sensorsList)
+
         sensorsAdapter = SensorsAdapter(this, sensorsDataArray)
 
         recycler_list.adapter = sensorsAdapter
-
-        setSensorsData()
-        // Enables Always-on
-        setAmbientEnabled()
 
         // Trigger an AsyncTask that will get the handheld device node
         StartSetupSensorDataTask().execute(this)
 
         setCronometer()
     }
-
 
     override fun onResume() {
         super.onResume()
@@ -64,30 +69,28 @@ class MainActivity : WearableActivity() {
         Log.i(TAG, "Wear activity paused")
     }
 
-    private fun setSensorsData() {
-        val sensorManager : SensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        val sensorsList: MutableList<Sensor> = sensorManager.getSensorList(Sensor.TYPE_ALL)
+    private fun initialiseSensorDataArray(sensorsList: MutableList<Sensor>) {
+        sensorsDataArray = ArrayList<SensorData>()
         sensorsList.forEach { sensor ->
-            sensorsDataArray.add(SensorData(sensor.name, false, "Nothing", null))
+            sensorsDataArray.add(SensorData(sensor.name, false, "Nothing", Date().time))
         }
+    }
 
+    private fun registerListenersToSensors(sensorManager : SensorManager, sensorsList: MutableList<Sensor>) {
         sensorsDataArray.forEachIndexed { index, sensorData ->
             val sensorEventListener = object : SensorEventListener {
                 override fun onSensorChanged(sensorEvent: SensorEvent) {
                     sensorData.sensorValue = Arrays.toString(sensorEvent.values)
-                    sensorData.time = Date()
-//                    recycler_list.adapter.notifyDataSetChanged()
-                    Log.i("Listener", "Listener for ${sensorData.sensorName} vs ${sensorsList[index].name} registered" )
-                    //                Log.d("Sensor", Arrays.toString(sensorEvent.values))
+                    sensorData.time = Date().time
+                    // Log.d("Sensor", Arrays.toString(sensorEvent.values))
                 }
 
                 override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
-                    //                Log.d("SensorAccChange", sensor.name + " - " + accuracy)
+                    // Log.d("SensorAccChange", sensorsList[index].name + " - " + accuracy)
                 }
             }
             sensorManager.registerListener(sensorEventListener, sensorsList[index], SensorManager.SENSOR_DELAY_UI)
         }
-
     }
 
     private fun retriveCapableNodes() {
@@ -141,16 +144,15 @@ class MainActivity : WearableActivity() {
 
     private fun setCronometer() {
         handler = Handler()
-        val miliseconds : Long = 500
-
-
-
         runnable = object : Runnable {
             override fun run() {
-                val message = getSensorsDataJson()
-                Log.i(TAG, message)
-                sendMessage(message.toByteArray())
-                handler.postDelayed(this, miliseconds)
+                val sensorsDataArrayCopy = ArrayList<SensorData>()
+                sensorsDataArray.forEach{sensorsDataArrayCopy.add(it.copy())}
+                updateWearUi(sensorsDataArrayCopy)
+                val messageJson = getSensorsDataJson(sensorsDataArrayCopy)
+                Log.i(TAG, "Send Json: + $messageJson")
+                sendMessage(messageJson.toByteArray())
+                handler.postDelayed(this, delay)
             }
         }
     }
@@ -159,16 +161,19 @@ class MainActivity : WearableActivity() {
         handler.post(runnable)
     }
 
-
     private fun stopSendingMessage() {
         handler.removeCallbacks(runnable)
     }
 
-
-    private fun getSensorsDataJson(): String  {
-        Log.i(TAG, "sensorsCount = " + sensorsDataArray.size)
+    private fun getSensorsDataJson(sensorsDataArrayCopy: ArrayList<SensorData>): String  {
         val gson = GsonBuilder().setPrettyPrinting().create()
-        return gson.toJson(sensorsDataArray.filter { it.isChecked })
+        return gson.toJson(sensorsDataArrayCopy.filter { it.isChecked })
+    }
+
+    private fun updateWearUi(sensorsDataArrayCopy: ArrayList<SensorData>) {
+        sensorsDataArrayCopy.forEachIndexed { index, sensorData ->
+            sensorsAdapter.notifyItemChanged(index, sensorData)
+        }
     }
 
     private class StartSetupSensorDataTask : AsyncTask<MainActivity, Void, Void>() {
