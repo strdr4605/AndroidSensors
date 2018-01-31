@@ -1,18 +1,10 @@
 package com.example.strainu.androidsensors
 
 import android.content.Context
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.CheckBox
-import android.widget.TextView
-import java.util.*
 import kotlin.collections.ArrayList
 
 /**
@@ -31,16 +23,26 @@ class SensorsAdapter(context: Context,
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
         val sensorHolder: SensorHolder = holder as SensorHolder
         sensorHolder.sensorName.text = sensorsDataArray[position].sensorName
-//        sensorHolder.sensorCheckBox.isChecked = sensorsDataArray[position].isChecked
-//        sensorHolder.sensorValue.text = sensorsDataArray[position].sensorValue
-//        Log.i(TAG, "***********************************************************************")
-//        Log.i(TAG, "position = $position, sensors_name =  ${sensorsDataArray[position].sensorName}")
-//
-//
+        sensorHolder.sensorValue.text = sensorsDataArray[position].sensorValue
+
         sensorHolder.sensorCheckBox.setOnCheckedChangeListener(null)
         sensorHolder.sensorCheckBox.isChecked = sensorsDataArray[position].isChecked
         sensorHolder.sensorCheckBox.setOnCheckedChangeListener { buttonView, isChecked ->
                 sensorsDataArray[position].isChecked = isChecked
+        }
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int, payloads: MutableList<Any>?) {
+        if(!payloads!!.isEmpty()) {
+            if (payloads[0] is SensorData) {
+                val sensorHolder: SensorHolder = holder as SensorHolder
+                val payloadsData = payloads[0] as SensorData
+                sensorHolder.sensorName.text = payloadsData.sensorName
+                sensorHolder.sensorValue.text = payloadsData.sensorValue
+            }
+        }else {
+            Log.i(TAG, "******************************")
+            super.onBindViewHolder(holder,position, payloads);
         }
     }
 

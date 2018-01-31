@@ -9,5 +9,5 @@ data class SensorData(
         val sensorName: String,
         var isChecked: Boolean,
         var sensorValue: String,
-        var time: Date?
+        var time: Long
 )

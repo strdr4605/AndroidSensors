@@ -22,10 +22,11 @@
         android:layout_below="@id/sensor_name"
         android:layout_marginTop="5dp"
         android:layout_toStartOf="@+id/sensor_check_box"
-        android:maxHeight="20dp"
+        android:maxLines="2"
+        android:minLines="2"
         android:text="@string/sensor_value"
         android:textSize="8sp"
-        android:visibility="invisible"/>
+        android:visibility="visible" />
 
     <CheckBox
         android:id="@+id/sensor_check_box"
