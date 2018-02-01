@@ -47,14 +47,14 @@ class MainActivity : WearableActivity() {
         initialiseSensorDataArray(sensorsList)
         registerListenersToSensors(sensorManager, sensorsList)
 
-        sensorsAdapter = SensorsAdapter(this, sensorsDataArray)
+        sensorsAdapter = SensorsAdapter(sensorsDataArray)
 
         recycler_list.adapter = sensorsAdapter
 
         // Trigger an AsyncTask that will get the handheld device node
         StartSetupSensorDataTask().execute(this)
 
-        setCronometer()
+        setRunnable()
     }
 
     override fun onResume() {
@@ -142,7 +142,8 @@ class MainActivity : WearableActivity() {
         }
     }
 
-    private fun setCronometer() {
+    //This runneble updates Wearable Ui and Sends messages to mobile
+    private fun setRunnable() {
         handler = Handler()
         runnable = object : Runnable {
             override fun run() {

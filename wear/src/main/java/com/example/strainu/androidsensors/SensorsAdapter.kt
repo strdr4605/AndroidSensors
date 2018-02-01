@@ -10,8 +10,7 @@ import kotlin.collections.ArrayList
 /**
  * Created by strongheart on 11/10/17.
  */
-class SensorsAdapter(context: Context,
-                     private val sensorsDataArray: ArrayList<SensorData>): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class SensorsAdapter(private val sensorsDataArray: ArrayList<SensorData>): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val TAG = "SensorAdapter"
 
@@ -28,7 +27,7 @@ class SensorsAdapter(context: Context,
         sensorHolder.sensorCheckBox.setOnCheckedChangeListener(null)
         sensorHolder.sensorCheckBox.isChecked = sensorsDataArray[position].isChecked
         sensorHolder.sensorCheckBox.setOnCheckedChangeListener { buttonView, isChecked ->
-                sensorsDataArray[position].isChecked = isChecked
+            sensorsDataArray[position].isChecked = isChecked
         }
     }
 
@@ -41,7 +40,7 @@ class SensorsAdapter(context: Context,
                 sensorHolder.sensorValue.text = payloadsData.sensorValue
             }
         }else {
-            Log.i(TAG, "******************************")
+//            Log.i(TAG, "******************************")
             super.onBindViewHolder(holder,position, payloads);
         }
     }
