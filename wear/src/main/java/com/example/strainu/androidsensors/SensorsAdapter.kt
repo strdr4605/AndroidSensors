@@ -27,7 +27,7 @@ class SensorsAdapter(private val sensorsDataArray: ArrayList<SensorData>): Recyc
         sensorHolder.sensorCheckBox.setOnCheckedChangeListener(null)
         sensorHolder.sensorCheckBox.isChecked = sensorsDataArray[position].isChecked
         sensorHolder.sensorCheckBox.setOnCheckedChangeListener { buttonView, isChecked ->
-                sensorsDataArray[position].isChecked = isChecked
+            sensorsDataArray[position].isChecked = isChecked
         }
     }
 
@@ -40,7 +40,7 @@ class SensorsAdapter(private val sensorsDataArray: ArrayList<SensorData>): Recyc
                 sensorHolder.sensorValue.text = payloadsData.sensorValue
             }
         }else {
-            Log.i(TAG, "******************************")
+//            Log.i(TAG, "******************************")
             super.onBindViewHolder(holder,position, payloads);
         }
     }
